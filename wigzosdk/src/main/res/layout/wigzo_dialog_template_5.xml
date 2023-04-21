@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:background="@drawable/wigzo_dialog_template_5_background">
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_no"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/cross_white_70t_with_padding"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="25dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/notification_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="70dp"
+                android:background="@android:color/transparent"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.2"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:textColor="@android:color/white"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/notification_body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="70dp"
+                android:layout_marginBottom="45dp"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.2"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:textColor="@android:color/white"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="#ba3e3e"
+                android:orientation="vertical"
+                android:paddingBottom="5dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_yes"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:text="Ok"
+                    android:textAllCaps="true"
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
