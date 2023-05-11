@@ -63,48 +63,42 @@ public class Device {
                 e.printStackTrace();
             }
         }
-        JSONObject res = new JSONObject();
-        return res;
+        String orgToken = Wigzo.getOrgToken();
+        final String url = WigzoUrlWrapper.addQueryParam(
+                WigzoUrlWrapper.addQueryParam(
+                        Configuration.BASE_URL.value + Configuration.USER_LOCATION_URL.value,
+                        "orgId", orgToken), Configuration.SITE_ID.value, orgToken);
 
-        //Removed This Part Of code Because It was not able to fetch Location from Wigzo .
+        //Initialise Executor Service to get device location from server
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+        Future<String> future = executorService.submit(new Callable<String>() {
+            public String call() {
+                //Get response from server
+                String response = ConnectionStream.getRequest(url);
 
-//        String orgToken = Wigzo.getOrgToken();
-//        final String url = WigzoUrlWrapper.addQueryParam(
-//                WigzoUrlWrapper.addQueryParam(
-//                        Configuration.BASE_URL.value + Configuration.USER_LOCATION_URL.value,
-//                        "orgId", orgToken), Configuration.SITE_ID.value, orgToken);
-//
-//        //Initialise Executor Service to get device location from server
-//        ExecutorService executorService = Executors.newSingleThreadExecutor();
-//
-//        Future<String> future = executorService.submit(new Callable<String>() {
-//            public String call() {
-//                //Get response from server
-//                String response = ConnectionStream.getRequest(url);
-//
-//                //Check if response is not null
-//                if (StringUtils.isNotEmpty(response)) {
-//                    //Save device location
-//                    Wigzo.getSharedStorage()
-//                            .edit()
-//                            .putString(Configuration.DEVICE_LOCATION_KEY.value, response.toString())
-//                            .apply();
-//                }
-//                return response;
-//            }
-//        });
-//        JSONObject res = null;
-//        try {
-//            res = new JSONObject(future.get());
-//        } catch (ExecutionException e) {
-//            e.printStackTrace();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-
+                //Check if response is not null
+                if (StringUtils.isNotEmpty(response)) {
+                    //Save device location
+                    Wigzo.getSharedStorage()
+                            .edit()
+                            .putString(Configuration.DEVICE_LOCATION_KEY.value, response.toString())
+                            .apply();
+                }
+                return response;
+            }
+        });
+        JSONObject res = null;
+        try {
+            res = new JSONObject(future.get());
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    return res;
 
     }
 }
