@@ -63,6 +63,8 @@ public class Device {
                 e.printStackTrace();
             }
         }
+
+
         String orgToken = Wigzo.getOrgToken();
         final String url = WigzoUrlWrapper.addQueryParam(
                 WigzoUrlWrapper.addQueryParam(
@@ -98,7 +100,8 @@ public class Device {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    return res;
+
+        return res;
 
     }
 }
