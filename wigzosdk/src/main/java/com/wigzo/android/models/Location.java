@@ -13,13 +13,12 @@ public class Location extends Model {
     private String stateCode;
     private String city;
 
-    public Location () {
-        JSONObject locationJson = com.wigzo.android.helpers.Device.fetchDeviceLocation();
-
-        this.countryCode = locationJson.optString("country", "");
-        this.stateName = locationJson.optString("stateName", "");
-        this.stateCode = locationJson.optString("stateCode", "");
-        this.city = locationJson.optString("city", "");
+    public Location () {}
+    public Location (String countryCode, String stateName , String stateCode , String city) {
+        this.countryCode = countryCode;
+        this.stateName = stateName;
+        this.stateCode = stateCode;
+        this.city = city;
     }
 
     public Location setCountryCode(String countryCode) { this.countryCode = countryCode; return this;}
