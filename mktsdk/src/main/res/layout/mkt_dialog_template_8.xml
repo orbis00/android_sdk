@@ -1,0 +1,66 @@
+<RelativeLayout android:id="@+id/notification_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_corner"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Title -->
+    <TextView
+        android:id="@+id/notification_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:text="Notification Title" />
+
+    <!-- Description Message -->
+    <TextView
+        android:id="@+id/notification_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="This is the notification message." />
+
+    <!-- Buttons (Optional) -->
+
+    <LinearLayout
+        android:id="@+id/buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <!-- Button 1 -->
+        <Button
+            android:id="@+id/notification_button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:cursorVisible="true"
+            android:autoLink="web"
+            android:linksClickable="true"
+            android:visibility="gone"
+            android:onClick="openDestinationActivity"
+            android:paddingBottom="10dp"
+            android:layout_marginEnd="8dp"/>
+
+        <Space
+            android:layout_width="8dp"
+            android:layout_height="6dp"/>
+
+        <!-- Button 2 -->
+        <Button
+            android:id="@+id/notification_button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:cursorVisible="true"
+            android:autoLink="web"
+            android:linksClickable="true"
+            android:visibility="gone"
+            android:onClick="openDestinationActivity"
+            android:layout_marginStart="6dp"/>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible" />
+
+</RelativeLayout>
