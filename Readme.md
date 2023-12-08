@@ -251,28 +251,39 @@ Notifying mkt that the notification has been recieived by the user is important,
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
-        // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
-            Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+        Log.d(TAG, "Message data payload: " + remoteMessage.getData());
 
-            if (/* Check if data needs to be processed by long running job */ true) {
-                // For long-running tasks (10 seconds or more) use WorkManager.
-                /*scheduleJob();*/
-
-                long orgId = Long.parseLong(remoteMessage.getData().get("organizationId"));
-                long campaignId = Long.parseLong(remoteMessage.getData().get("id"));
-
-                NotificationRecieved notificationRecieved = new NotificationRecieved(orgId, campaignId);
-
-                // Send notification to the Notification Bar
-                sendNotification(remoteMessage.getData().get("body"), campaignId, orgId);
-                notificationRecieved.push();
-            } else {
-                ....
-            }
-
+        if (/* Check if data needs to be processed by long running job */ true) {
+        // For long-running tasks (10 seconds or more) use WorkManager.
+        /*scheduleJob();*/
+        String templateType = remoteMessage.getData().get("type");
+        JSONObject jsonobject = null;
+        try {
+        jsonobject = new JSONObject(templateType);
+        } catch (JSONException e) {
+        throw new RuntimeException(e);
         }
-        .....
+        String pushType = jsonobject.optString("pushType");
+        long orgId = Long.parseLong(remoteMessage.getData().get("organizationId"));
+        long campaignId = Long.parseLong(remoteMessage.getData().get("id"));
+        try {
+        if(pushType.equals("inApp")){
+        sendinAppNotification(remoteMessage);
+
+        }else {
+        Log.d("remoteMessage", String.valueOf(remoteMessage));
+        sendNotification(remoteMessage);
+        }
+        } catch (JSONException e) {
+        throw new RuntimeException(e);
+        }
+        NotificationRecieved notificationRecieved = new NotificationRecieved(orgId, campaignId);
+        notificationRecieved.push();
+        } else {
+        // Handle message within 10 seconds
+        handleNow();
+        }
         }
     }
 ```
@@ -294,39 +305,49 @@ Example:
 
 **In your `sendNotifiation()` method,**
 ```java
-private void sendNotification(String messageBody, long campaignId, long organizationId) {
+ private void sendNotification(RemoteMessage remoteMessage) throws JSONException {
+
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra("campaignId", campaignId);
-        intent.putExtra("organizationId", organizationId);
+        intent.putExtra("campaignId", Long.parseLong(remoteMessage.getData().get("id")));
+        intent.putExtra("organizationId", Long.parseLong(remoteMessage.getData().get("organizationId")));
+        String Source = "WIGZO";
+        String medium = "push";
+        intent.putExtra("medium",Source);
+        intent.putExtra("source",medium);
+        String messageTitle = remoteMessage.getData().get("title");
+        String messageBody = remoteMessage.getData().get("body");
+
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-
+        PendingIntent.FLAG_IMMUTABLE);
         String channelId = "0";
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
         NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this, channelId)
-                        .setSmallIcon(R.drawable.ic_launcher_background)
-                        .setContentTitle("Title")
-                        .setContentText(messageBody)
-                        .setAutoCancel(true)
-                        .setSound(defaultSoundUri)
-                        .setContentIntent(pendingIntent);
+        new NotificationCompat.Builder(this, channelId).setSmallIcon(R.drawable.ic_launcher_background)
+        .setContentTitle(messageTitle)
+        .setContentText(messageBody)
+        .setAutoCancel(true)
+        .setSound(defaultSoundUri)
+        .setContentIntent(pendingIntent);
+
+
+        notificationBuilder = NotificationBuilder.notificationBuilder(remoteMessage.getData(),notificationBuilder,intent,pendingIntent);
 
         NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Since android Oreo notification channel is needed.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId,
-                    "Channel human readable title",
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            notificationManager.createNotificationChannel(channel);
+        NotificationChannel channel = new NotificationChannel(channelId,
+        "Channel human readable title",
+        NotificationManager.IMPORTANCE_DEFAULT);
+        notificationManager.createNotificationChannel(channel);
+        }
+//        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify(0,notificationBuilder.build());
         }
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
-    }
 ```
 
 **When the target activityis opened, inside the `onCreate()` method,**
@@ -381,6 +402,55 @@ To integrate In App Notifications, the very first step is to extend all your act
 mktActivity extends ```androidx.appcompat.app.AppCompatActivity```. This is necessary because, in order to display any Dialog we need to have the Context of the running activity, so that it can be run on the main UI thread. Your code should look like this:
 
  ```java
+
+
+//New in app notification Implementation through code.
+private void sendinAppNotification(RemoteMessage remoteMessage) {
+
+        if (remoteMessage.getNotification() != null) {
+        Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+        }
+        Map<String, String> remoteMessageData = remoteMessage.getData();
+        ArrayList<String> urlList = new ArrayList<>();
+        if (remoteMessageData.size() > 0) {
+        // Notifying Wigzo that the notification has is received.
+        NotificationRecieved notificationRecieved = new NotificationRecieved(Long.parseLong(remoteMessage.getData().get("organizationId")),Integer.parseInt(remoteMessage.getData().get("id")));
+        notificationRecieved.push();
+        InAppMessageHandler inAppMessageHandler = new InAppMessageHandler(remoteMessageData, MainActivity.class, MainActivity.class);
+        try {
+        JSONArray jsonArray = new JSONArray(remoteMessageData.get("imageUrl"));
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+        String url = jsonArray.getString(i);
+        urlList.add(url);
+        }
+        } catch (JSONException e) {
+        e.printStackTrace();
+        }
+
+        inAppMessageHandler
+        // Replace the payload from the notification with your own payload.
+        // Use this if you want to display some other image instead of the image_url sent from the notification.
+        .setPositiveResponseTargetActivity(MainActivity.class)
+        .setNegativeResponseTargetActivity(MainActivity.class)
+        .setLayoutID(remoteMessageData.get("layoutId")) //use this method only if you know which layout id you want to use explicitly.
+        .setCanceledOnTouchOutside(true) // set false if you do not want the dialog to be cancelled on outside touch by the user.
+        .setOnDismissContext(this) // Context of the class which implements InAppMessageHandler.OnDIsmissListener interface
+        .setOnCancelContext(this); // Context of the class which implements InAppMessageHandler.OnCancelListener interface
+
+        inAppMessageHandler.createNotification();
+        }
+
+
+@Override
+public void onDismiss(Map<String, String> remoteMessageData) {
+
+        }
+
+@Override
+public void onCancel(Map<String, String> remoteMessageData) {
+
+        }
  //
  ...
 import com.mkt.sdk.base.mktActivity;
