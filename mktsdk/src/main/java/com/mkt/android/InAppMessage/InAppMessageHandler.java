@@ -211,21 +211,20 @@ public class InAppMessageHandler {
                                 negativeResponseTargetActivity,
                                 remoteMessageData);
                     }
+                    mktDialogTemplate.setCanceledOnTouchOutside(canceledOnTouchOutside);
+                    mktDialogTemplate.show();
+
+                    mktDialogTemplate.setOnCancelListener(dialogInterface -> {
+                        if (null != cancelListenerContext) {
+                            cancelListenerContext.onCancel(remoteMessageData);
+                        }
+                    });
+                    mktDialogTemplate.setOnDismissListener(dialogInterface -> {
+                        if(dismissListenerContext != null) {
+                            dismissListenerContext.onDismiss(remoteMessageData);
+                        }
+                    });
                 };
-                mktDialogTemplate.setCanceledOnTouchOutside(canceledOnTouchOutside);
-                mktDialogTemplate.show();
-
-                mktDialogTemplate.setOnCancelListener(dialogInterface -> {
-                    if (null != cancelListenerContext) {
-                        cancelListenerContext.onCancel(remoteMessageData);
-                    }
-                });
-                mktDialogTemplate.setOnDismissListener(dialogInterface -> {
-                    if(dismissListenerContext != null) {
-                        dismissListenerContext.onDismiss(remoteMessageData);
-                    }
-                });
-
             }
         });
     }

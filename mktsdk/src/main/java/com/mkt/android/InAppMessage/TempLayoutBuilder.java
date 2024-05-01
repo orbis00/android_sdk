@@ -56,6 +56,7 @@ public class TempLayoutBuilder extends Dialog implements View.OnClickListener {
 
     public static final String VERTICAL = "vertical";
     public static final String HORIZONTAL = "horizontal";
+    public static final String IMAGETEXT = "image&text";
 
 
     private Map<String, String> remoteMessageData;
@@ -198,7 +199,7 @@ public class TempLayoutBuilder extends Dialog implements View.OnClickListener {
         bodyMessageParams.rightMargin=20;
         notificationText.setLayoutParams(bodyMessageParams);
 
-        if (type.equals(IMAGE)) {
+        if (type.equals(IMAGE) || type.equals(IMAGETEXT)) {
             addImage(imageView,orientation,notificationData);
         }else {
             imageView.setVisibility(View.GONE);
@@ -234,8 +235,8 @@ public class TempLayoutBuilder extends Dialog implements View.OnClickListener {
         customNotificationLayout.setBackgroundColor(Color.parseColor(notificationDetails.getString("templateBackground")));
         notificationText.setTextColor((Color.parseColor(notificationDetails.getString("titleColor"))));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, Float.parseFloat(notificationDetails.getString("titleFontSize"))); // Set text size to 18sp
-        notificationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, Integer.parseInt(notificationDetails.getString("DescriptionFontSize")));// Set text size to 14sp
-        notificationText.setTextColor(Color.parseColor((notificationDetails.getString("DescriptionFontColor"))));
+        notificationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, Integer.parseInt(notificationDetails.getString("descriptionFontSize")));// Set text size to 14sp
+        notificationText.setTextColor(Color.parseColor((notificationDetails.getString("descriptionFontColor"))));
 
         if (notificationDetails.getBoolean("isclose")) {
             ImageView xIcon = new ImageView(MktApplication.getAppContext());
