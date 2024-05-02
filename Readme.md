@@ -1,34 +1,34 @@
 #Integration
 
-**This article will guide you through the process of Wigzo Android SDK integration.**
-**You can integrate WigzoSDK in your app in simple steps.**
+**This article will guide you through the process of Mkt Android SDK integration.**
+**You can integrate MktSDK in your app in simple steps.**
 
 ####Minimum Android Version:
 
 > minimum of API Level 21.
 
-####Add Wigzo SDK to your project
+####Add Mkt SDK to your project
 >Add dependency in build.gradle (app level):
 
 >```implementation '<ADD_REPOSITORY PATH>'```
 
-#Initializing Wigzo SDK
-- Create a class and extend it with WigzoApplication.
+#Initializing Mkt SDK
+- Create a class and extend it with MktApplication.
 - In onCreate() method, call super.onCreate() method.
-- Initialize Wigzo SDK.
+- Initialize Mkt SDK.
 
 ######example:
 ```java
-package com.example.wigzosdkpocapp;
+package com.example.mktsdkpocapp;
 
-import com.wigzo.sdk.Wigzo;
-import com.wigzo.sdk.base.WigzoApplication;
+import com.mkt.sdk.mkt;
+import com.mkt.sdk.base.mktApplication;
 
-public class MyExtendedApplication extends WigzoApplication {
+public class MyExtendedApplication extends mktApplication {
 
     public void onCreate() {
         super.onCreate(); //Always call this method first before whriting any other logic.
-        Wigzo.initialize("<YOUR_ORGANIZATION_TOKEN>", getApplicationContext());
+        mkt.initialize("<YOUR_ORGANIZATION_TOKEN>", getApplicationContext());
     }
 }
 ```
@@ -46,9 +46,9 @@ public class MyExtendedApplication extends WigzoApplication {
 </manifest>
 ```
 
-Congratulations! You have successfully integrated Wigzo SDK in your app. Let us guide you through usage of this SDK.
+Congratulations! You have successfully integrated mkt SDK in your app. Let us guide you through usage of this SDK.
 
-#Using Wigzo SDK
+#Using mkt SDK
 
 ###Setting up Events (or Activity) tracking.
 
@@ -162,7 +162,7 @@ EventData eventData = new EventData();
 ###Setting up User Profile tracking.
 Below API's help you capture profile of User. User’s profile should be created only once.
 ####UserProfileMapper
-> Wigzo has provided a class “UserProfileMapper” which can be used to capture user's profile.
+> mkt has provided a class “UserProfileMapper” which can be used to capture user's profile.
 
 **To create User profile:**
 > 1. Create an instance of UserProfileMapper.
@@ -183,7 +183,7 @@ Below API's help you capture profile of User. User’s profile should be created
 > 1. Overloaded Constructors of this class can be called as mentioned below:
 > 2. Setters are  also provided for other fields.
 
-**To save and send User profile data to Wigzo , following method can be used :**
+**To save and send User profile data to mkt , following method can be used :**
 > `<userProfile_instance>.push();`
 
 ####Exceptional Case :
@@ -204,15 +204,15 @@ UserEmailMapper userEmailMapper = new UserEmailMapper(<email>);
 
 #####To integrate Firebase in your App [Click here](https://firebase.google.com/docs/cloud-messaging)
 
-There are few events which are required to be sent to Wigzo in order to show you the correct information about the campaigns triggered from Wigzo Dashboard.
+There are few events which are required to be sent to mkt in order to show you the correct information about the campaigns triggered from mkt Dashboard.
 
-First you need to map FCM token with Wigzo and then register the token.
+First you need to map FCM token with mkt and then register the token.
 
 ####Map FCM
-To map FCM with Wigzo, create an instance of FCMMapper class with the FCM token and push it. Wigzo is required to be notiofied about the token every time the token is generated.
+To map FCM with mkt, create an instance of FCMMapper class with the FCM token and push it. mkt is required to be notiofied about the token every time the token is generated.
 
 ####Register FCM
-To Register FCM with Wigzo, create an instance of FCMRegister class with the FCM token and push it. This step also is mandatory whenever a new token is generated.
+To Register FCM with mkt, create an instance of FCMRegister class with the FCM token and push it. This step also is mandatory whenever a new token is generated.
 
 >***Note***: Map FCM and Register FCM both are required when a new token is generated. Also Map FCM should happen before registering.
 
@@ -239,10 +239,10 @@ In your FCM Listener service
     }
 ```
 
-####Notifying Wigzo about the notification received:
-Notifying Wigzo that the notification has been recieived by the user is important, as it helps us keep track of the data which has been sent by Wigzo to provide you with the important insights about your campaigns. To do so:
+####Notifying mkt about the notification received:
+Notifying mkt that the notification has been recieived by the user is important, as it helps us keep track of the data which has been sent by mkt to provide you with the important insights about your campaigns. To do so:
 
-- In the `onMessageReceived()` method in your FCM Listener class, crate an instance of NotificationRecieved class. It requires Organization ID and Campaign ID which came along the notification, sent via Wigzo dashboard.
+- In the `onMessageReceived()` method in your FCM Listener class, crate an instance of NotificationRecieved class. It requires Organization ID and Campaign ID which came along the notification, sent via mkt dashboard.
   Example:
 ```java
 @Override
@@ -251,37 +251,48 @@ Notifying Wigzo that the notification has been recieived by the user is importan
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
-        // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
-            Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+        Log.d(TAG, "Message data payload: " + remoteMessage.getData());
 
-            if (/* Check if data needs to be processed by long running job */ true) {
-                // For long-running tasks (10 seconds or more) use WorkManager.
-                /*scheduleJob();*/
-
-                long orgId = Long.parseLong(remoteMessage.getData().get("organizationId"));
-                long campaignId = Long.parseLong(remoteMessage.getData().get("id"));
-
-                NotificationRecieved notificationRecieved = new NotificationRecieved(orgId, campaignId);
-
-                // Send notification to the Notification Bar
-                sendNotification(remoteMessage.getData().get("body"), campaignId, orgId);
-                notificationRecieved.push();
-            } else {
-                ....
-            }
-
+        if (/* Check if data needs to be processed by long running job */ true) {
+        // For long-running tasks (10 seconds or more) use WorkManager.
+        /*scheduleJob();*/
+        String templateType = remoteMessage.getData().get("type");
+        JSONObject jsonobject = null;
+        try {
+        jsonobject = new JSONObject(templateType);
+        } catch (JSONException e) {
+        throw new RuntimeException(e);
         }
-        .....
+        String pushType = jsonobject.optString("pushType");
+        long orgId = Long.parseLong(remoteMessage.getData().get("organizationId"));
+        long campaignId = Long.parseLong(remoteMessage.getData().get("id"));
+        try {
+        if(pushType.equals("inApp")){
+        sendinAppNotification(remoteMessage);
+
+        }else {
+        Log.d("remoteMessage", String.valueOf(remoteMessage));
+        sendNotification(remoteMessage);
+        }
+        } catch (JSONException e) {
+        throw new RuntimeException(e);
+        }
+        NotificationRecieved notificationRecieved = new NotificationRecieved(orgId, campaignId);
+        notificationRecieved.push();
+        } else {
+        // Handle message within 10 seconds
+        handleNow();
+        }
         }
     }
 ```
 
-####Notifying Wigzo about the notification Clicked:
-Notifying Wigzo about the notification has been clicked by the user is another crucial step as it helps Wigzo collecting the data about the campaigns triggered from the Wigzo Dashboard. To do so:
+####Notifying mkt about the notification Clicked:
+Notifying mkt about the notification has been clicked by the user is another crucial step as it helps mkt collecting the data about the campaigns triggered from the mkt Dashboard. To do so:
 
 - While you are sending the notification to the Notification Manager, create an Intent which contains a target Activity (which will be opened when the notificaiton is clicked)
-- Put Bundle extras which contains the `campaignId` and the `organizationId`(you'll get the campaignId and OrganizationId in the data received from the notification sent from the Wigzo Dashboard).
+- Put Bundle extras which contains the `campaignId` and the `organizationId`(you'll get the campaignId and OrganizationId in the data received from the notification sent from the mkt Dashboard).
 - Create a Pending Intent and provide the Intent created above to it.
 - Attach the Pending Intent created above to the notificaiton builder.
 - Build the Notifiation.
@@ -294,39 +305,49 @@ Example:
 
 **In your `sendNotifiation()` method,**
 ```java
-private void sendNotification(String messageBody, long campaignId, long organizationId) {
+ private void sendNotification(RemoteMessage remoteMessage) throws JSONException {
+
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra("campaignId", campaignId);
-        intent.putExtra("organizationId", organizationId);
+        intent.putExtra("campaignId", Long.parseLong(remoteMessage.getData().get("id")));
+        intent.putExtra("organizationId", Long.parseLong(remoteMessage.getData().get("organizationId")));
+        String Source = "WIGZO";
+        String medium = "push";
+        intent.putExtra("medium",Source);
+        intent.putExtra("source",medium);
+        String messageTitle = remoteMessage.getData().get("title");
+        String messageBody = remoteMessage.getData().get("body");
+
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-
+        PendingIntent.FLAG_IMMUTABLE);
         String channelId = "0";
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
         NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this, channelId)
-                        .setSmallIcon(R.drawable.ic_launcher_background)
-                        .setContentTitle("Title")
-                        .setContentText(messageBody)
-                        .setAutoCancel(true)
-                        .setSound(defaultSoundUri)
-                        .setContentIntent(pendingIntent);
+        new NotificationCompat.Builder(this, channelId).setSmallIcon(R.drawable.ic_launcher_background)
+        .setContentTitle(messageTitle)
+        .setContentText(messageBody)
+        .setAutoCancel(true)
+        .setSound(defaultSoundUri)
+        .setContentIntent(pendingIntent);
+
+
+        notificationBuilder = NotificationBuilder.notificationBuilder(remoteMessage.getData(),notificationBuilder,intent,pendingIntent);
 
         NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Since android Oreo notification channel is needed.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId,
-                    "Channel human readable title",
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            notificationManager.createNotificationChannel(channel);
+        NotificationChannel channel = new NotificationChannel(channelId,
+        "Channel human readable title",
+        NotificationManager.IMPORTANCE_DEFAULT);
+        notificationManager.createNotificationChannel(channel);
+        }
+//        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify(0,notificationBuilder.build());
         }
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
-    }
 ```
 
 **When the target activityis opened, inside the `onCreate()` method,**
@@ -371,45 +392,94 @@ In-App Notifications are the pop-ups (Dialogs) which are required to be displaye
 When the negative response button is pressed it simply closes the dialog and no action is taken.
 
 When the "Ok" button is pressed it will take the user to an "activity" (another screen) along with the notification data (notification title, body, image url, campaign id, organization id, intent data (payload) , etc).
-Now in that activity your logic to take further action should be written, like redirecting user to some another screen and notifying wigzo about the notification click (mentioned above in this document).
+Now in that activity your logic to take further action should be written, like redirecting user to some another screen and notifying mkt about the notification click (mentioned above in this document).
 
-Redirection can be based on the key-value pairs received in the intent data (payload). It is recommended that you use deep links to redirect users to another screen. If deep links are not possible use appropriate key-value pairs (sent via Wigzo Dashboard) for unique identification and redirection.
+Redirection can be based on the key-value pairs received in the intent data (payload). It is recommended that you use deep links to redirect users to another screen. If deep links are not possible use appropriate key-value pairs (sent via mkt Dashboard) for unique identification and redirection.
 
 ####Integrate In App Notifications
 
-To integrate In App Notifications, the very first step is to extend all your activities with WigzoActivity.
-WigzoActivity extends ```androidx.appcompat.app.AppCompatActivity```. This is necessary because, in order to display any Dialog we need to have the Context of the running activity, so that it can be run on the main UI thread. Your code should look like this:
+To integrate In App Notifications, the very first step is to extend all your activities with mktActivity.
+mktActivity extends ```androidx.appcompat.app.AppCompatActivity```. This is necessary because, in order to display any Dialog we need to have the Context of the running activity, so that it can be run on the main UI thread. Your code should look like this:
 
  ```java
+
+
+//New in app notification Implementation through code.
+private void sendinAppNotification(RemoteMessage remoteMessage) {
+
+        if (remoteMessage.getNotification() != null) {
+        Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+        }
+        Map<String, String> remoteMessageData = remoteMessage.getData();
+        ArrayList<String> urlList = new ArrayList<>();
+        if (remoteMessageData.size() > 0) {
+        // Notifying Wigzo that the notification has is received.
+        NotificationRecieved notificationRecieved = new NotificationRecieved(Long.parseLong(remoteMessage.getData().get("organizationId")),Integer.parseInt(remoteMessage.getData().get("id")));
+        notificationRecieved.push();
+        InAppMessageHandler inAppMessageHandler = new InAppMessageHandler(remoteMessageData, MainActivity.class, MainActivity.class);
+        try {
+        JSONArray jsonArray = new JSONArray(remoteMessageData.get("imageUrl"));
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+        String url = jsonArray.getString(i);
+        urlList.add(url);
+        }
+        } catch (JSONException e) {
+        e.printStackTrace();
+        }
+
+        inAppMessageHandler
+        // Replace the payload from the notification with your own payload.
+        // Use this if you want to display some other image instead of the image_url sent from the notification.
+        .setPositiveResponseTargetActivity(MainActivity.class)
+        .setNegativeResponseTargetActivity(MainActivity.class)
+        .setLayoutID(remoteMessageData.get("layoutId")) //use this method only if you know which layout id you want to use explicitly.
+        .setCanceledOnTouchOutside(true) // set false if you do not want the dialog to be cancelled on outside touch by the user.
+        .setOnDismissContext(this) // Context of the class which implements InAppMessageHandler.OnDIsmissListener interface
+        .setOnCancelContext(this); // Context of the class which implements InAppMessageHandler.OnCancelListener interface
+
+        inAppMessageHandler.createNotification();
+        }
+
+
+@Override
+public void onDismiss(Map<String, String> remoteMessageData) {
+
+        }
+
+@Override
+public void onCancel(Map<String, String> remoteMessageData) {
+
+        }
  //
  ...
-import com.wigzo.sdk.base.WigzoActivity;
+import com.mkt.sdk.base.mktActivity;
 ....
 //
 
-public class MainActivity extends WigzoActivity {
+public class MainActivity extends mktActivity {
 	super.onCreate(savedInstanceState);
 	...
 }
  ```
 
-***Note***: If (for some reason) you cannot extend one or all of your activities, then at the beginning of the ```onCreate()``` method, just after calling ```super.onCreate()``` method, set the context of your current activity in WigzoApplication as mentioned below:
+***Note***: If (for some reason) you cannot extend one or all of your activities, then at the beginning of the ```onCreate()``` method, just after calling ```super.onCreate()``` method, set the context of your current activity in mktApplication as mentioned below:
 ```
 //
 ...
-import com.wigzo.sdk.base.WigzoApplication;
+import com.mkt.sdk.base.mktApplication;
 ...
 //
 public class <YOUR_ACTIVITY_NAME> extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
-        WigzoApplication.setAppContext(this);
+        mktApplication.setAppContext(this);
 		...
 		//
 }
 ```
 
 ####Displaying In App Notifications
-When a notification is sent from the Wigzo Dashboard, it contains a key name ```type```.  You can display the In App notifcation based upon its value. Possible values are ```push```, ```inapp```, ```both```.
+When a notification is sent from the mkt Dashboard, it contains a key name ```type```.  You can display the In App notifcation based upon its value. Possible values are ```push```, ```inapp```, ```both```.
 
 To create an In App Notification, when a notification is received, in the ```MyFirebaseMessagingService``` class (created by you), inside the onMessageReceived method create an instance of ```InAppMessageHandler``` class and call ```createNotification()``` method. ```InAppMessageHandler ``` constructor takes the following agruments,
 - remoteMessageData (data recieved in the remote message).
@@ -491,7 +561,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService impleme
 		// Check if message contains a data payload.
         Map<String, String> remoteMessageData = remoteMessage.getData();
         if (remoteMessageData.size() > 0) {
-		// Notifying Wigzo that the notification has is received.
+		// Notifying mkt that the notification has is received.
 		NotificationRecieved notificationRecieved = new NotificationRecieved(orgId, campaignId);
                 notificationRecieved.push();
 
@@ -539,8 +609,8 @@ We internally use ```dismiss() ``` method whenever a ```positiveResponse``` or a
 
 When the dialog is cancelled, the user will not be taken to the negative response target activity, so to handle such case, it is recommended to use implement ```InAppMEssageHandler.OnCancelListener```
 
-####Notifying Wigzo that some action has been taken.
-When a user clicks either "Ok" or "Cancel" button, a new activity is opened (if provided by you). There you can notify Wigzo that the notification has been clicked with a positive response or a negative response. In that activity you can write your own logic to further take them to some other Screen (Activity) based upon the payload or notification data received.
+####Notifying mkt that some action has been taken.
+When a user clicks either "Ok" or "Cancel" button, a new activity is opened (if provided by you). There you can notify mkt that the notification has been clicked with a positive response or a negative response. In that activity you can write your own logic to further take them to some other Screen (Activity) based upon the payload or notification data received.
 
 ```java
 	NotificationOpen notificationOpen = new NotificationOpen(campaignId, organizationId);
