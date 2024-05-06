@@ -50,13 +50,13 @@ public class TempLayoutBuilder extends Dialog implements View.OnClickListener {
     public static final String BOTTOM = "bottom";
     public static final String CENTER = "center";
     public static final String FULLSCREEN = "fullScreen";
+    public static final String IMAGETEXT = "image&text";
 
     public static final String IMAGE = "image";
     public static final String TEXT = "text";
 
     public static final String VERTICAL = "vertical";
     public static final String HORIZONTAL = "horizontal";
-    public static final String IMAGETEXT = "image&text";
 
 
     private Map<String, String> remoteMessageData;
@@ -127,7 +127,7 @@ public class TempLayoutBuilder extends Dialog implements View.OnClickListener {
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT
         );
-        if(type.equals(IMAGE)) {
+        if(type.equals(IMAGE) || type.equals(IMAGETEXT)) {
             addImage(imageView,orientation,notifiacationDetails);
         }
         textParams.addRule(RelativeLayout.BELOW,imageView.getId());
@@ -180,6 +180,8 @@ public class TempLayoutBuilder extends Dialog implements View.OnClickListener {
                 RelativeLayout.LayoutParams.WRAP_CONTENT
         );
         textParams.addRule(RelativeLayout.END_OF, imageView.getId());
+        textParams.topMargin = 20;
+        textParams.leftMargin = 20;
         textParams.addRule(RelativeLayout.ALIGN_TOP, imageView.getId());
 
         // Adding the message in the layout
@@ -197,6 +199,7 @@ public class TempLayoutBuilder extends Dialog implements View.OnClickListener {
         bodyMessageParams.addRule(RelativeLayout.BELOW, title.getId());
         bodyMessageParams.addRule(RelativeLayout.ALIGN_RIGHT);
         bodyMessageParams.rightMargin=20;
+        bodyMessageParams.leftMargin=20;
         notificationText.setLayoutParams(bodyMessageParams);
 
         if (type.equals(IMAGE) || type.equals(IMAGETEXT)) {
@@ -206,7 +209,7 @@ public class TempLayoutBuilder extends Dialog implements View.OnClickListener {
         }
         addLayoutProperties(notificationData,title,notificationText,customNotificationLayout);
 
-        if(remoteMessageData.containsKey("button")) {
+        if(remoteMessageData.containsKey("button") ) {
             addButtons(customNotificationLayout,imageView,title,notificationText,type,buttonOrientation,orientation);
         } else  {
             LinearLayout layout = customNotificationLayout.findViewById(R.id.buttons);
@@ -216,6 +219,7 @@ public class TempLayoutBuilder extends Dialog implements View.OnClickListener {
 
 
         AlertDialog dialog = builder.create();
+//        dialog.setView(customNotificationLayout);
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         Window window = dialog.getWindow();
 
@@ -277,6 +281,7 @@ public class TempLayoutBuilder extends Dialog implements View.OnClickListener {
         if(orientation.equals(TOP) || orientation.equals(BOTTOM)){
             imageParams = new RelativeLayout.LayoutParams(250,200);
             imageParams.topMargin = 20;
+            imageParams.leftMargin = 20;
             imageParams.addRule(RelativeLayout.ALIGN_PARENT_START);
             imageParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         }else if(orientation.equals(FULLSCREEN)) {
